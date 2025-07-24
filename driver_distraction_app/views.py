@@ -53,7 +53,7 @@ try:
     logger.info(f"Loading H5 model from {H5_MODEL_PATH}")
     lstm_model = load_model(H5_MODEL_PATH)
     
-    # Load VGG16 for feature extraction (for uploaded videos)
+   
     logger.info("Loading VGG16 for feature extraction")
     vgg_model = VGG16(weights='imagenet', include_top=False, pooling='avg')
     vgg_model.trainable = False
