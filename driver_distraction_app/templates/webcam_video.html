@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Welcome Modal -->
+    <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="welcomeModalLabel">Welcome to Live Distraction Detection</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-video fa-4x text-primary mb-3"></i>
+                        <h4>Real-time Driver Monitoring</h4>
+                    </div>
+                    <p>This system will analyze your behavior in real-time using your webcam to detect signs of distracted driving.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please ensure good lighting and position your face clearly in the camera view.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        <i class="fas fa-play me-2"></i>Start Monitoring
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Video Feed -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-video me-2"></i>
+                        <span>Live Camera Feed</span>
+                    </div>
+                    <div id="cameraStatus" class="badge bg-light text-dark">
+                        <i class="fas fa-circle-notch fa-spin me-1"></i>
+                        <span>Initializing</span>
+                    </div>
+                </div>
+                <div class="card-body p-0 position-relative">
+                    <div class="video-container">
+                        <video id="webcam" autoplay playsinline class="w-100"></video>
+                        <div class="position-absolute top-0 start-0 p-2 bg-dark bg-opacity-50 text-white rounded-end">
+                            <i class="fas fa-user me-1"></i>
+                            <span id="resolutionDisplay">--x--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 border-top">
+                        <div id="statusIndicator" class="d-flex align-items-center mb-3">
+                            <div class="spinner-border spinner-border-sm text-primary me-2 d-none" id="statusSpinner"></div>
+                            <span class="badge bg-secondary me-2" id="statusBadge">
+                                <i class="fas fa-power-off me-1"></i>
+                                <span>Inactive</span>
+                            </span>
+                            <span class="ms-auto text-muted small" id="lastAnalyzed">
+                                <i class="fas fa-clock me-1"></i>
+                                <span>Not yet analyzed</span>
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center">
+                            <button id="captureBtn" class="btn btn-primary btn-lg px-4 py-2">
+                                <i class="fas fa-play me-2"></i>Start Monitoring
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Stats and Results -->
+        <div class="col-lg-4">
+            <!-- System Stats Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <i class="fas fa-chart-line me-2"></i>
+                    System Performance
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card bg-primary bg-opacity-10 p-3 rounded text-center">
+                                <div class="stat-value text-primary fw-bold" id="frameRate">--</div>
+                                <div class="stat-label small text-muted">Frames/sec</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card bg-info bg-opacity-10 p-3 rounded text-center">
+                                <div class="stat-value text-info fw-bold" id="analysisTime">--</div>
+                                <div class="stat-label small text-muted">Process Time</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card bg-success bg-opacity-10 p-3 rounded text-center">
+                                <div class="stat-value text-success fw-bold" id="confidenceLevel">--%</div>
+                                <div class="stat-label small text-muted">Confidence</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card bg-warning bg-opacity-10 p-3 rounded text-center">
+                                <div class="stat-value text-warning fw-bold" id="frameCount">0</div>
+                                <div class="stat-label small text-muted">Frames Analyzed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detection Results Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <i class="fas fa-poll me-2"></i>
+                    Detection Results
+                </div>
+                <div class="card-body">
+                    <div id="alertPanel" class="alert alert-info d-flex align-items-center mb-4">
+                        <i class="fas fa-info-circle me-3 fs-4"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">System Ready</h6>
+                            <p class="mb-0 small">Waiting to start analysis...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="main-result text-center mb-4 p-3 bg-light rounded">
+                        <div class="text-muted mb-1">Current Detection</div>
+                        <div class="display-5 fw-bold mb-2" id="mainResult">--</div>
+                        <div class="progress" style="height: 6px;">
+                            <div id="mainConfidenceBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="small text-muted mt-1" id="confidenceText">Confidence: 0%</div>
+                    </div>
+                    
+                    <h6 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Confidence Breakdown
+                    </h6>
+                    <div id="confidenceBreakdown" class="mb-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Full Screen Modal for Camera View -->
+    <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex align-items-center justify-content-center">
+                    <video id="webcamFullscreen" autoplay playsinline class="h-100"></video>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                        <i class="fas fa-compress me-2"></i>Exit Fullscreen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-container {
+        position: relative;
+        background: #000;
+        aspect-ratio: 6/3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #webcam {
+        max-width: 100%;
+        max-height: 100%;
+        transform: scaleX(-1);
+    }
+    
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    #confidenceBreakdown .confidence-item {
+        margin-bottom: 0.75rem;
+    }
+    
+    #confidenceBreakdown .confidence-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    #confidenceBreakdown .confidence-bar {
+        height: 6px;
+        background-color: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    #confidenceBreakdown .confidence-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+    
+    #statusBadge {
+        transition: all 0.3s ease;
+    }
+    
+    .badge-active {
+        background-color: #198754 !important;
+    }
+    
+    .badge-processing {
+        background-color: #0d043e !important;
+    }
+    
+    .badge-inactive {
+        background-color: #6c757d !important;
+    }
+    
+    .badge-error {
+        background-color: #dc3545 !important;
+    }
+</style>
+
+<script>
+    // Constants
+    const ANALYSIS_INTERVAL = 1500; // 1.5 seconds between analyses
+    const MIN_CONFIDENCE = 40; // Minimum confidence threshold (40%)
+    const MAX_RETRIES = 3;
+    
+    // State variables
+    let mediaStream = null;
+    let isAnalyzing = false;
+    let analysisInterval = null;
+    let retryCount = 0;
+    let frameCount = 0;
+    
+    // Performance tracking
+    let lastFrameTime = 0;
+    let frameTimes = [];
+    let analysisTimes = [];
+    
+    // DOM Elements
+    const webcam = document.getElementById('webcam');
+    const webcamFullscreen = document.getElementById('webcamFullscreen');
+    const captureBtn = document.getElementById('captureBtn');
+    const cameraStatus = document.getElementById('cameraStatus');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusSpinner = document.getElementById('statusSpinner');
+    const alertPanel = document.getElementById('alertPanel');
+    const mainResult = document.getElementById('mainResult');
+    const mainConfidenceBar = document.getElementById('mainConfidenceBar');
+    const confidenceText = document.getElementById('confidenceText');
+    const confidenceBreakdown = document.getElementById('confidenceBreakdown');
+    const lastAnalyzed = document.getElementById('lastAnalyzed');
+    const frameRateDisplay = document.getElementById('frameRate');
+    const analysisTimeDisplay = document.getElementById('analysisTime');
+    const confidenceLevelDisplay = document.getElementById('confidenceLevel');
+    const frameCountDisplay = document.getElementById('frameCount');
+    const resolutionDisplay = document.getElementById('resolutionDisplay');
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Show welcome modal
+        const welcomeModal = new bootstrap.Modal('#welcomeModal');
+        welcomeModal.show();
+        
+        // Initialize webcam
+        await initWebcam();
+        
+        // Set up event listeners
+        captureBtn.addEventListener('click', toggleAnalysis);
+        
+        // Start frame rate calculation
+        requestAnimationFrame(calculateFrameRate);
+    });
+    
+    // Initialize webcam
+    async function initWebcam() {
+        updateCameraStatus("fas fa-circle-notch fa-spin", "Initializing...");
+        updateAlertPanel("info", "fas fa-info-circle", "Initializing Camera", "Please wait while we access your camera...");
+        
+        try {
+            const constraints = {
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user',
+                    frameRate: { ideal: 24 }
+                },
+                audio: false
+            };
+
+            updateCameraStatus("fas fa-circle-notch fa-spin", "Requesting access...");
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+            webcam.srcObject = mediaStream;
+            webcamFullscreen.srcObject = mediaStream;
+            
+            // Wait for video to start playing
+            await new Promise((resolve) => {
+                webcam.onplaying = () => {
+                    const width = webcam.videoWidth;
+                    const height = webcam.videoHeight;
+                    resolutionDisplay.textContent = `${width}x${height}`;
+                    updateCameraStatus("fas fa-check-circle", "Live");
+                    resolve();
+                };
+                setTimeout(resolve, 3000); // Fallback in case onplaying doesn't fire
+            });
+            
+            updateAlertPanel("success", "fas fa-check-circle", "Camera Ready", "Click 'Start Monitoring' to begin analysis.");
+            updateSystemStatus("inactive");
+            
+        } catch (error) {
+            console.error('Camera initialization error:', error);
+            let errorMsg, icon;
+            
+            if (error.name === 'NotAllowedError') {
+                errorMsg = "Please allow camera permissions and refresh the page.";
+                icon = "fas fa-lock";
+                updateCameraStatus(icon, "Permission denied");
+            } else if (error.name === 'NotFoundError') {
+                errorMsg = "No camera found. Please check your device.";
+                icon = "fas fa-camera-slash";
+                updateCameraStatus(icon, "No camera");
+            } else {
+                errorMsg = "Error accessing camera: " + error.message;
+                icon = "fas fa-exclamation-triangle";
+                updateCameraStatus(icon, "Error");
+            }
+            
+            updateAlertPanel("danger", icon, "Camera Error", errorMsg);
+            captureBtn.disabled = true;
+        }
+    }
+    
+    // Calculate frame rate
+    function calculateFrameRate(timestamp) {
+        if (!lastFrameTime) {
+            lastFrameTime = timestamp;
+            requestAnimationFrame(calculateFrameRate);
+            return;
+        }
+        
+        const deltaTime = timestamp - lastFrameTime;
+        lastFrameTime = timestamp;
+        const fps = 1000 / deltaTime;
+        
+        frameTimes.push(fps);
+        if (frameTimes.length > 10) frameTimes.shift();
+        
+        const avgFPS = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+        frameRateDisplay.textContent = avgFPS.toFixed(1);
+        
+        requestAnimationFrame(calculateFrameRate);
+    }
+    
+    // Toggle analysis on/off
+    function toggleAnalysis() {
+        if (isAnalyzing) {
+            stopAnalysis();
+        } else {
+            startAnalysis();
+        }
+    }
+    
+    // Start analysis
+    function startAnalysis() {
+        if (isAnalyzing) return;
+        
+        isAnalyzing = true;
+        frameCount = 0;
+        frameCountDisplay.textContent = frameCount;
+        
+        captureBtn.innerHTML = '<i class="fas fa-stop me-2"></i>Stop Monitoring';
+        captureBtn.classList.remove('btn-primary');
+        captureBtn.classList.add('btn-danger');
+        
+        updateAlertPanel("info", "fas fa-sync-alt fa-spin", "Starting Analysis", "Initializing real-time monitoring...");
+        updateSystemStatus("processing");
+        updateCameraStatus("fas fa-eye", "Analyzing");
+        
+        // Initial analysis
+        analyzeFrame();
+        
+        // Set up periodic analysis
+        analysisInterval = setInterval(analyzeFrame, ANALYSIS_INTERVAL);
+    }
+    
+    // Stop analysis
+    function stopAnalysis() {
+        if (!isAnalyzing) return;
+        
+        clearInterval(analysisInterval);
+        isAnalyzing = false;
+        
+        captureBtn.innerHTML = '<i class="fas fa-play me-2"></i>Start Monitoring';
+        captureBtn.classList.remove('btn-danger');
+        captureBtn.classList.add('btn-primary');
+        
+        updateAlertPanel("info", "fas fa-info-circle", "Analysis Stopped", "Click button to restart monitoring.");
+        updateSystemStatus("inactive");
+        updateCameraStatus("fas fa-check-circle", "Ready");
+    }
+    
+    // Analyze current frame
+    async function analyzeFrame() {
+        const analysisStartTime = performance.now();
+        
+        try {
+            updateAlertPanel("info", "fas fa-sync-alt fa-spin", "Analyzing", "Processing current frame...");
+            
+            // Capture frame
+            const blob = await captureFrameAsBlob();
+            if (!blob) {
+                throw new Error("Failed to capture frame");
+            }
+
+            // Send to server for processing
+            const formData = new FormData();
+            formData.append('frame', blob, 'frame.jpg');
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+            
+            const response = await fetch('/process-frame/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("Server response not OK");
+            }
+            
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || "Analysis failed");
+            }
+
+            // Update performance metrics
+            const analysisTime = performance.now() - analysisStartTime;
+            analysisTimes.push(analysisTime);
+            if (analysisTimes.length > 5) analysisTimes.shift();
+            const avgAnalysisTime = analysisTimes.reduce((a, b) => a + b, 0) / analysisTimes.length;
+            analysisTimeDisplay.textContent = `${avgAnalysisTime.toFixed(0)}ms`;
+            
+            // Update frame count
+            frameCount++;
+            frameCountDisplay.textContent = frameCount;
+            
+            // Display results
+            displayResults(result);
+            
+        } catch (error) {
+            console.error('Frame analysis error:', error);
+            
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                updateAlertPanel("warning", "fas fa-exclamation-triangle", 
+                    `Attempt ${retryCount} Failed`, 
+                    `Retrying... (${MAX_RETRIES - retryCount} attempts left)`);
+            } else {
+                showError(error.message, error);
+                stopAnalysis();
+            }
+        }
+    }
+    
+    // Capture current frame as blob
+    async function captureFrameAsBlob() {
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = webcam.videoWidth;
+            canvas.height = webcam.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+            
+            return await new Promise(resolve => {
+                canvas.toBlob(resolve, 'image/jpeg', 0.9);
+            });
+        } catch (error) {
+            console.error('Frame capture error:', error);
+            return null;
+        }
+    }
+    
+    // Display analysis results
+    function displayResults(data) {
+        retryCount = 0; // Reset retry counter on success
+        
+        const topPred = data.all_predictions[0];
+        const isNormalDriving = topPred.class === 'Normal Driving';
+        const confidence = safeToFixed(topPred.confidence);
+        
+        // Update main result display
+        mainResult.textContent = topPred.class;
+        mainConfidenceBar.style.width = `${confidence}%`;
+        confidenceText.textContent = `Confidence: ${confidence}%`;
+        
+        // Set appropriate color based on result
+        if (isNormalDriving) {
+            mainConfidenceBar.className = 'progress-bar bg-success';
+            mainResult.className = 'display-5 fw-bold mb-2 text-success';
+        } else {
+            mainConfidenceBar.className = 'progress-bar bg-warning';
+            mainResult.className = 'display-5 fw-bold mb-2 text-warning';
+        }
+        
+        // Update confidence level display
+        confidenceLevelDisplay.textContent = `${confidence}%`;
+        
+        // Create confidence breakdown
+        const confidenceItems = data.all_predictions.map(pred => {
+            const predConfidence = safeToFixed(pred.confidence);
+            const isTopPred = pred.class === topPred.class;
+            const barColor = pred.class === 'Normal Driving' ? 'bg-success' : 
+                            isTopPred ? 'bg-warning' : 'bg-primary';
+            
+            return `
+                <div class="confidence-item">
+                    <div class="confidence-label">
+                        <span>${pred.class}</span>
+                        <span>${predConfidence}%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill ${barColor}" style="width: ${predConfidence}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        confidenceBreakdown.innerHTML = confidenceItems;
+        
+        // Update alert panel based on result
+        if (isNormalDriving) {
+            updateAlertPanel("success", "fas fa-check-circle", "Normal Driving", 
+                `Driver is focused with ${confidence}% confidence.`);
+        } else {
+            updateAlertPanel("warning", "fas fa-exclamation-triangle", "Distraction Detected", 
+                `${topPred.class} detected with ${confidence}% confidence.`);
+        }
+        
+        // Update timestamp
+        const now = new Date();
+        lastAnalyzed.innerHTML = `<i class="fas fa-clock me-1"></i><span>${now.toLocaleTimeString()}</span>`;
+        
+        updateSystemStatus("active");
+    }
+    
+    // Update camera status indicator
+    function updateCameraStatus(icon, text) {
+        cameraStatus.innerHTML = `<i class="${icon} me-1"></i><span>${text}</span>`;
+    }
+    
+    // Update system status
+    function updateSystemStatus(status) {
+        statusSpinner.classList.toggle('d-none', status !== 'processing');
+        
+        // Update badge
+        statusBadge.className = 'badge';
+        switch(status) {
+            case "active":
+                statusBadge.classList.add('badge-active');
+                statusBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i><span>Active</span>';
+                break;
+            case "inactive":
+                statusBadge.classList.add('badge-inactive');
+                statusBadge.innerHTML = '<i class="fas fa-power-off me-1"></i><span>Inactive</span>';
+                break;
+            case "processing":
+                statusBadge.classList.add('badge-processing');
+                statusBadge.innerHTML = '<i class="fas fa-sync-alt fa-spin me-1"></i><span>Processing</span>';
+                break;
+            case "error":
+                statusBadge.classList.add('badge-error');
+                statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i><span>Error</span>';
+                break;
+        }
+    }
+    
+    // Update alert panel
+    function updateAlertPanel(type, icon, title, message) {
+        alertPanel.className = `alert alert-${type} d-flex align-items-center mb-4`;
+        alertPanel.innerHTML = `
+            <i class="${icon} me-3 fs-4"></i>
+            <div>
+                <h6 class="alert-heading mb-1">${title}</h6>
+                <p class="mb-0 small">${message}</p>
+            </div>
+        `;
+    }
+    
+    // Show error message
+    function showError(message, error = null) {
+        console.error('Error:', error);
+        updateAlertPanel("danger", "fas fa-exclamation-circle", "Error", message);
+        updateSystemStatus("error");
+    }
+    
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Safe number formatting
+    function safeToFixed(num, decimals=0) {
+        num = Number(num) || 0;
+        return Math.min(100, Math.max(0, num)).toFixed(decimals);
+    }
+    
+    // Clean up when page unloads
+    window.addEventListener('beforeunload', () => {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        if (analysisInterval) {
+            clearInterval(analysisInterval);
+        }
+    });
+    
+    // Toggle fullscreen view
+    function toggleFullscreen() {
+        const fullscreenModal = new bootstrap.Modal('#fullscreenModal');
+        fullscreenModal.show();
+    }
+</script>
+{% endblock %}

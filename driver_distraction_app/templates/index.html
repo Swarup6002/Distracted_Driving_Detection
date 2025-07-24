@@ -1,0 +1,620 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #98e2f8;
+        --dark-color: #1a1b41;
+        --light-color: #ffffff;
+        --modal-header-bg: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+    }
+
+    /* Main hero section with background image */
+    .home-hero {
+        background: 
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('/static/css/ddre.png') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Analytics section styling */
+    #analytics {
+        background: 
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('/static/css/ddre.png') no-repeat center center fixed;
+        background-size: cover;
+        padding: 4rem 0;
+        color: white;
+    }
+
+    #analytics .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    #analytics .card:hover {
+        transform: translateY(-10px);
+    }
+
+    #analytics .card-header {
+        background-color: var(--primary-color);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+
+    #analytics .card-body {
+        padding: 2rem;
+    }
+
+    /* Modal styling */
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: var(--modal-header-bg);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .btn-close-modal {
+        position: absolute;
+        right: 1.5rem;
+        top: 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .feature-card {
+        padding: 1.5rem;
+        border-radius: 10px;
+        background: white;
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .upload-icon-bg {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    }
+
+    .live-icon-bg {
+        background: linear-gradient(135deg, #ff4d4d 0%, #ff8c66 100%);
+    }
+
+    .progress-container {
+        height: 6px;
+        background: #f0f0f0;
+        border-radius: 3px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        width: 0;
+        transition: width 1.5s ease;
+    }
+
+    .requirement-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: rgba(76, 201, 240, 0.1);
+        border-radius: 50px;
+        margin: 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    /* Chart containers */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Animation styles */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .analytics-card {
+        opacity: 0;
+        animation: fadeIn 0.8s ease forwards;
+    }
+
+    .analytics-card:nth-child(1) { animation-delay: 0.2s; }
+    .analytics-card:nth-child(2) { animation-delay: 0.4s; }
+    .analytics-card:nth-child(3) { animation-delay: 0.6s; }
+
+    /* Progress bar styling */
+    .progress {
+        height: 30px;
+        border-radius: 15px;
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 250px;
+        }
+        
+        #analytics .card {
+            margin-bottom: 2rem;
+        }
+    }
+</style>
+
+<!-- Hero Section with Background Image -->
+<div class="home-hero">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-3 fw-bold mb-4">NeuroPilot</h1>
+                <p class="lead mb-5">Advanced Driver Monitoring System with AI-Powered Analytics</p>
+                <div class="d-flex justify-content-center gap-4">
+                    <button class="btn btn-primary btn-lg px-4 py-3 rounded-pill shadow" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="fas fa-upload me-2"></i> Upload Video
+                    </button>
+                    <button class="btn btn-danger btn-lg px-4 py-3 rounded-pill shadow" data-bs-toggle="modal" data-bs-target="#liveModal">
+                        <i class="fas fa-video me-2"></i> Live Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Video Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 650px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="uploadModalLabel">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Video Analysis
+                </h2>
+                <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <!-- Upload Section -->
+                    <div class="col-md-6">
+                        <div class="feature-card h-100" style="padding: 1.5rem; border-radius: 10px;">
+                            <div class="feature-icon upload-icon-bg mb-3">
+                                <i class="fas fa-file-video"></i>
+                            </div>
+                            <h3 class="h4">Upload Your Driving Video</h3>
+                            <p class="mb-3">Analyze recorded videos to detect distracted behaviors.</p>
+                            
+                            <div class="progress-container mb-3">
+                                <div class="progress-bar" id="uploadProgress"></div>
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> MP4/AVI/MOV
+                                </span>
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> 60-120s
+                                </span>
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> ≤100MB
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Section -->
+                    <div class="col-md-6">
+                        <div class="feature-card h-100" style="padding: 1.5rem; border-radius: 10px;">
+                            <div class="feature-icon upload-icon-bg mb-3">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="h4">Detailed Analytics</h3>
+                            <p class="mb-3">Comprehensive reports on your driving patterns.</p>
+                            
+                            <ul class="list-unstyled text-start mb-3">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Distraction detection</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Eye tracking</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Head position</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Phone usage</li>
+                            </ul>
+                            
+                            <a href="{% url 'upload_video' %}" class="btn btn-primary w-100 mt-auto">
+                                Start Analysis <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Analysis Modal -->
+<div class="modal fade" id="liveModal" tabindex="-1" aria-labelledby="liveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 650px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="liveModalLabel">
+                    <i class="fas fa-bolt me-2"></i> Real-Time Monitoring
+                </h2>
+                <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <!-- Live Monitoring Section -->
+                    <div class="col-md-6">
+                        <div class="feature-card h-100" style="padding: 1.5rem; border-radius: 10px;">
+                            <div class="feature-icon live-icon-bg mb-3">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <h3 class="h4">Live Monitoring</h3>
+                            <p class="mb-3">Real-time analysis of your driving behavior.</p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> Webcam access
+                                </span>
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> Good lighting
+                                </span>
+                                <span class="requirement-badge">
+                                    <i class="fas fa-check-circle"></i> Chrome/Firefox
+                                </span>
+                            </div>
+                            
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Position camera to view your face
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alerts Section -->
+                    <div class="col-md-6">
+                        <div class="feature-card h-100" style="padding: 1.5rem; border-radius: 10px;">
+                            <div class="feature-icon live-icon-bg mb-3">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h3 class="h4">Instant Alerts</h3>
+                            <p class="mb-3">Immediate feedback when distracted.</p>
+                            
+                            <ul class="list-unstyled text-start mb-3">
+                                <li class="mb-2"><i class="fas fa-bell text-warning me-2"></i> Visual alerts</li>
+                                <li class="mb-2"><i class="fas fa-bell text-warning me-2"></i> Audio notifications</li>
+                                <li class="mb-2"><i class="fas fa-bell text-warning me-2"></i> Drowsiness detection</li>
+                                <li class="mb-2"><i class="fas fa-bell text-warning me-2"></i> Phone warnings</li>
+                            </ul>
+                            
+                            <a href="{% url 'live_analysis' %}" class="btn btn-danger w-100 mt-auto">
+                                Start Live Session <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Visualization Section -->
+<section id="analytics">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-4 mb-3">Advanced Analytics</h2>
+            <p class="lead">Our AI-powered detection system delivers highly accurate results</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Pie Chart - Performance by Category -->
+            <div class="col-md-6 analytics-card">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Performance by Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoryPieChart"></canvas>
+                        </div>
+                        <p class="text-muted mb-0">F1-score distribution across different distraction categories.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bar Chart - Category Metrics -->
+            <div class="col-md-6 analytics-card">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Category Performance Metrics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="metricsBarChart"></canvas>
+                        </div>
+                        <p class="text-muted mb-0">Detailed precision, recall and F1-scores for each category.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Metrics Table -->
+            <div class="col-12 analytics-card">
+                <div class="card shadow-lg">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-table me-2"></i> Detailed Classification Metrics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Billboards Viewing</td>
+                                        <td>0.96</td>
+                                        <td>1.00</td>
+                                        <td>0.98</td>
+                                        <td>44</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Normal Driving</td>
+                                        <td>0.98</td>
+                                        <td>0.98</td>
+                                        <td>0.98</td>
+                                        <td>43</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Passenger Interaction</td>
+                                        <td>1.00</td>
+                                        <td>1.00</td>
+                                        <td>1.00</td>
+                                        <td>43</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rubbernecking</td>
+                                        <td>1.00</td>
+                                        <td>0.98</td>
+                                        <td>0.99</td>
+                                        <td>42</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Using Electronics</td>
+                                        <td>0.98</td>
+                                        <td>0.95</td>
+                                        <td>0.96</td>
+                                        <td>42</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Wildlife Scenery</td>
+                                        <td>1.00</td>
+                                        <td>1.00</td>
+                                        <td>1.00</td>
+                                        <td>44</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Category Pie Chart
+        const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: [
+                    'Billboards Viewing', 
+                    'Normal Driving', 
+                    'Passenger Interaction', 
+                    'Rubbernecking', 
+                    'Using Electronics', 
+                    'Wildlife Scenery'
+                ],
+                datasets: [{
+                    data: [0.98, 0.98, 1.00, 0.99, 0.96, 1.00],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#333',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${(context.raw * 100).toFixed(1)}%`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        });
+
+        // Initialize Metrics Bar Chart
+        const barCtx = document.getElementById('metricsBarChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Billboards Viewing', 
+                    'Normal Driving', 
+                    'Passenger Interaction', 
+                    'Rubbernecking', 
+                    'Using Electronics', 
+                    'Wildlife Scenery'
+                ],
+                datasets: [
+                    {
+                        label: 'Precision',
+                        data: [0.96, 0.98, 1.00, 1.00, 0.98, 1.00],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderWidth: 0
+                    },
+                    {
+                        label: 'Recall',
+                        data: [1.00, 0.98, 1.00, 0.98, 0.95, 1.00],
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderWidth: 0
+                    },
+                    {
+                        label: 'F1-Score',
+                        data: [0.98, 0.98, 1.00, 0.99, 0.96, 1.00],
+                        backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1.0,
+                        ticks: {
+                            callback: function(value) {
+                                return (value * 100).toFixed(0) + '%';
+                            },
+                            color: '#333'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#333'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${(context.raw * 100).toFixed(1)}%`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500
+                }
+            }
+        });
+
+        // Animate progress bar on scroll
+        const progressBar = document.querySelector('.progress-bar');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    progressBar.style.width = '99%';
+                }
+            });
+        }, { threshold: 0.5 });
+
+        observer.observe(document.querySelector('.progress'));
+
+        // Upload modal progress animation
+        $('#uploadModal').on('shown.bs.modal', function () {
+            document.getElementById('uploadProgress').style.width = '100%';
+        });
+
+        $('#uploadModal').on('hidden.bs.modal', function () {
+            document.getElementById('uploadProgress').style.width = '0';
+        });
+    });
+</script>
+{% endblock %}
+ <!-- ./venv/Scripts/activate -->  

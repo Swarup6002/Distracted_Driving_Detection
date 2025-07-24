@@ -1,0 +1,63 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+"GET / HTTP/1.1" 200 2325
+"GET / HTTP/1.1" 200 2325
+"GET /static/css/style.css HTTP/1.1" 304 0
+"GET /static/css/style.css HTTP/1.1" 304 0
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+C:\Users\swaru\Driver_distracted_detection\driver_distraction_app\views.py changed, reloading.
+C:\Users\swaru\Driver_distracted_detection\driver_distraction_app\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+"GET / HTTP/1.1" 200 2325
+"GET / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+C:\Users\swaru\Driver_distracted_detection\driver_distraction_app\views.py changed, reloading.
+C:\Users\swaru\Driver_distracted_detection\driver_distraction_app\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+Model loaded successfully
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+Model loaded successfully
+"GET / HTTP/1.1" 200 2325
+"GET / HTTP/1.1" 200 2325
+"GET /static/css/style.css HTTP/1.1" 304 0
+"GET /static/css/style.css HTTP/1.1" 304 0
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+"POST / HTTP/1.1" 200 2325
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Model loaded successfully
+Model loaded successfully
+"GET / HTTP/1.1" 200 2649
+"GET / HTTP/1.1" 200 2649
+"GET /static/css/style.css HTTP/1.1" 200 286
+"GET /static/css/style.css HTTP/1.1" 200 286
+"POST / HTTP/1.1" 200 2649
+"POST / HTTP/1.1" 200 2649
+"POST / HTTP/1.1" 200 2649
+"POST / HTTP/1.1" 200 2649

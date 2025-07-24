@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Animated Background Elements -->
+    <div class="position-fixed w-100 h-100" style="z-index: -1; overflow: hidden;">
+        <div class="animated-blob-1"></div>
+        <div class="animated-blob-2"></div>
+        <div class="animated-blob-3"></div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <!-- Upload Card with Glass Morphism Effect -->
+                <div class="card border-0 glass-morphism shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-transparent py-4 px-5">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-wrapper bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                <i class="fas fa-video text-primary fs-4"></i>
+                            </div>
+                            <div>
+                                <h2 class="mb-0 fw-bold">Upload Driving Video</h2>
+                                <p class="text-muted mb-0">Analyze driver behavior with AI</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-5">
+                        {% if error %}
+                            <div class="alert alert-danger d-flex align-items-center shadow-sm mb-4 animate__animated animate__shakeX">
+                                <i class="fas fa-exclamation-circle me-3 fs-4"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-1">Upload Error</h6>
+                                    <p class="mb-0">{{ error }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <form method="POST" enctype="multipart/form-data" id="videoUploadForm">
+                            {% csrf_token %}
+                            
+                            <!-- Drag & Drop Zone -->
+                            <div class="mb-4 text-center border-2 border-dashed rounded-3 p-5 bg-white bg-opacity-50 dropzone" id="dropzone">
+                                <div class="upload-icon mb-3">
+                                    <div class="icon-circle">
+                                        <i class="fas fa-cloud-upload-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-2">Drag & drop your video here</h5>
+                                <p class="text-muted small mb-3">or</p>
+                                <label for="video" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                </label>
+                                <input type="file" class="d-none" id="video" name="video" accept="video/*" required>
+                                <p class="small text-muted mt-3">Supported formats: MP4, AVI, MOV (Max 25MB)</p>
+                            </div>
+
+                            <!-- File Preview -->
+                            <div id="filePreview" class="text-center p-4 mb-4 d-none bg-white bg-opacity-70 rounded-3 shadow-sm animate__animated animate__fadeIn">
+                                <div class="file-preview-icon mb-3">
+                                    <i class="fas fa-file-video text-primary"></i>
+                                </div>
+                                <div class="file-info">
+                                    <h5 id="fileName" class="fw-semibold mb-1 text-truncate"></h5>
+                                    <p class="text-muted small mb-2" id="fileSize"></p>
+                                    <div class="progress mb-2" style="height: 6px;">
+                                        <div id="uploadProgress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="changeFileBtn">
+                                    <i class="fas fa-exchange-alt me-1"></i> Change File
+                                </button>
+                            </div>
+
+                            <!-- Detection Classes (Collapsible) -->
+                            <div class="accordion mb-4" id="detectionClasses">
+                                <div class="accordion-item border-0">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                            <i class="fas fa-tags me-2 text-primary"></i>
+                                            Detection Classes
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#detectionClasses">
+                                        <div class="accordion-body pt-0">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-ad me-1"></i> Billboards
+                                                </span>
+                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-car me-1"></i> Normal Driving
+                                                </span>
+                                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-users me-1"></i> Passenger Interaction
+                                                </span>
+                                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-eye me-1"></i> Rubbernecking
+                                                </span>
+                                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-mobile-alt me-1"></i> Electronics Use
+                                                </span>
+                                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-tree me-1"></i> Wildlife Scenery
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg py-3 rounded-pill shadow-lg hover-effect" id="submitBtn">
+                                    <span class="submit-text">
+                                        <i class="fas fa-play me-2"></i> Analyze Video
+                                    </span>
+                                    <span class="loading-text d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Analyzing...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 glass-morphism h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-shield-alt text-primary fs-2 mb-3"></i>
+                                <h5 class="fw-bold">Secure Upload</h5>
+                                <p class="small text-muted">Your data is encrypted and processed securely</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 glass-morphism h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-bolt text-primary fs-2 mb-3"></i>
+                                <h5 class="fw-bold">Fast Processing</h5>
+                                <p class="small text-muted">Get results in minutes with our AI engine</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 glass-morphism h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-chart-line text-primary fs-2 mb-3"></i>
+                                <h5 class="fw-bold">Detailed Analytics</h5>
+                                <p class="small text-muted">Comprehensive driver behavior insights</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Base Styles */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4f1ff 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+    }
+    
+    /* Glass Morphism Effect */
+    .glass-morphism {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    /* Animated Background Blobs */
+    .animated-blob-1 {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: rgba(36, 136, 229, 0.196);
+        border-radius: 50%;
+        top: -200px;
+        right: -200px;
+        animation: float 10s ease-in-out infinite;
+    }
+    
+    .animated-blob-2 {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 183, 105, 0.292);
+        border-radius: 50%;
+        bottom: -100px;
+        left: -100px;
+        animation: float 12s ease-in-out infinite reverse;
+    }
+    
+    .animated-blob-3 {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: rgba(183, 105, 255, 0.267);
+        border-radius: 50%;
+        top: 50%;
+        left: 30%;
+        animation: float 18s ease-in-out infinite 2s;
+    }
+    
+    @keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+        50% {
+            transform: translate(50px, 50px) rotate(180deg);
+        }
+        100% {
+            transform: translate(0, 0) rotate(360deg);
+        }
+    }
+    
+    /* Upload Zone Styles */
+    .dropzone {
+        border-color: rgba(13, 110, 253, 0.3);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .dropzone:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-color: rgba(13, 110, 253, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .upload-icon {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(13, 110, 253, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        transition: all 0.3s ease;
+    }
+    
+    .dropzone:hover .icon-circle {
+        background: rgba(13, 110, 253, 0.2);
+        transform: scale(1.05);
+    }
+    
+    /* File Preview */
+    .file-preview-icon {
+        font-size: 48px;
+        color: rgba(13, 110, 253, 0.7);
+    }
+    
+    /* Button Effects */
+    .hover-effect {
+        transition: all 0.3s ease;
+        background-image: linear-gradient(to right, #0d6efd, #0b5ed7);
+        border: none;
+    }
+    
+    .hover-effect:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3);
+    }
+    
+    .hover-effect:active {
+        transform: translateY(0);
+    }
+    
+    /* Badge Styles */
+    .badge {
+        transition: all 0.2s ease;
+    }
+    
+    .badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Icon Wrapper */
+    .icon-wrapper {
+        transition: all 0.3s ease;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .animated-blob-1, .animated-blob-2, .animated-blob-3 {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('video');
+        const dropzone = document.getElementById('dropzone');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const changeFileBtn = document.getElementById('changeFileBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = submitBtn.querySelector('.submit-text');
+        const loadingText = submitBtn.querySelector('.loading-text');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const form = document.getElementById('videoUploadForm');
+
+        // Initialize file handling
+        initFileHandling();
+
+        function initFileHandling() {
+            // Highlight dropzone when dragging over
+            ['dragenter', 'dragover'].forEach(event => {
+                dropzone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-primary');
+                    dropzone.style.transform = 'translateY(-4px)';
+                    dropzone.style.boxShadow = '0 8px 20px rgba(13, 110, 253, 0.15)';
+                });
+            });
+
+            // Remove highlight when leaving
+            ['dragleave', 'drop'].forEach(event => {
+                dropzone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-primary');
+                    dropzone.style.transform = '';
+                    dropzone.style.boxShadow = '';
+                });
+            });
+
+            // Handle file drop
+            dropzone.addEventListener('drop', e => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                }
+            });
+
+            // Handle file selection via input
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Change file button
+            changeFileBtn.addEventListener('click', resetFileSelection);
+        }
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                // Validate file type
+                const validTypes = ['video/mp4', 'video/avi', 'video/quicktime'];
+                if (!validTypes.includes(file.type)) {
+                    showError('Invalid file type. Please upload MP4, AVI, or MOV.');
+                    return;
+                }
+                
+                // Validate file size (25MB max)
+                if (file.size > 25 * 1024 * 1024) {
+                    showError('File too large. Maximum size is 25MB.');
+                    return;
+                }
+                
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                filePreview.classList.remove('d-none');
+                dropzone.classList.add('d-none');
+                
+                // Simulate upload progress (in a real app, you'd use actual upload progress)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    uploadProgress.style.width = `${progress}%`;
+                    if (progress >= 100) clearInterval(progressInterval);
+                }, 100);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]);
+        }
+
+        function resetFileSelection() {
+            fileInput.value = '';
+            filePreview.classList.add('d-none');
+            dropzone.classList.remove('d-none');
+            uploadProgress.style.width = '0%';
+        }
+
+        function showError(message) {
+            // In a real app, you'd show this more elegantly
+            alert(message);
+            resetFileSelection();
+        }
+
+        form.addEventListener('submit', function(e) {
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                showError('Please select a video file first.');
+                return;
+            }
+
+            // Show loading state
+            submitText.classList.add('d-none');
+            loadingText.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
+            // In a real app, you would handle the actual form submission here
+            // For demo purposes, we'll simulate a delay
+            setTimeout(() => {
+                // form.submit(); // Uncomment this in your actual implementation
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}
