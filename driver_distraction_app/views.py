@@ -34,7 +34,7 @@ CLASSES_LIST = [
 # Initialize models
 try:
     # Load TFLite model for webcam analysis
-    TFLITE_MODEL_PATH = os.path.join(settings.BASE_DIR, '99_percent_driver_distraction96by96b.tflite')
+    TFLITE_MODEL_PATH = os.path.join(settings.BASE_DIR, '99%driver_distraction96by96b.tflite')
     logger.info(f"Loading TFLite model from {TFLITE_MODEL_PATH}")
     
     if not os.path.exists(TFLITE_MODEL_PATH):
